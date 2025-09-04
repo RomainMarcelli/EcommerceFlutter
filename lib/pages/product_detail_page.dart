@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../widgets/app_scaffold.dart';
 import '../models/product.dart';
 import '../services/cart_service.dart';
 
@@ -13,22 +14,14 @@ class ProductDetailPage extends StatelessWidget {
     final images = _extractImages(product);
     final price = (product.price as num).toDouble();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(product.title),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.shopping_cart_outlined),
-            onPressed: () => Navigator.pushNamed(context, '/cart'),
-          ),
-        ],
-      ),
+    return AppScaffold(
+      title: product.title,
+      actions: const [_CartBadgeAction()],
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Images
             AspectRatio(
               aspectRatio: 1.2,
               child: PageView.builder(
@@ -42,8 +35,6 @@ class ProductDetailPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Titre + prix
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -67,19 +58,15 @@ class ProductDetailPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-
-            // Catégorie
-            if (product.category != null && product.category!.toString().isNotEmpty)
+            if (product.category != null &&
+                product.category!.toString().isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Chip(
                   label: Text(product.category.toString()),
                 ),
               ),
-
             const SizedBox(height: 16),
-
-            // Description
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -87,10 +74,7 @@ class ProductDetailPage extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
-
             const SizedBox(height: 24),
-
-            // Boutons
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -127,13 +111,10 @@ class ProductDetailPage extends StatelessWidget {
     );
   }
 
-  // Utilitaires pour gérer DummyJSON ou modèle custom
   static List<String> _extractImages(Product p) {
     final thumbs = <String>[];
     final thumb = _extractThumbnail(p);
     if (thumb != null) thumbs.add(thumb);
-
-    // si p.images existe et est une List<String>
     final any = (p.images);
     if (any is List) {
       for (final v in any) {
@@ -142,7 +123,6 @@ class ProductDetailPage extends StatelessWidget {
         }
       }
     }
-    // fallback
     if (thumbs.isEmpty) thumbs.add('');
     return thumbs;
   }
@@ -150,5 +130,18 @@ class ProductDetailPage extends StatelessWidget {
   static String? _extractThumbnail(Product p) {
     final t = (p.thumbnail is String) ? p.thumbnail as String : null;
     return (t != null && t.isNotEmpty) ? t : null;
+  }
+}
+
+class _CartBadgeAction extends StatelessWidget {
+  const _CartBadgeAction();
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: 'Panier',
+      icon: const Icon(Icons.shopping_cart_outlined),
+      onPressed: () => Navigator.pushNamed(context, '/cart'),
+    );
   }
 }
