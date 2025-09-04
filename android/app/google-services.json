@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "922634780452",
+    "project_id": "shopflutter-mds2025",
+    "storage_bucket": "shopflutter-mds2025.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:922634780452:android:c6fba86c00618fa91c3db1",
+        "android_client_info": {
+          "package_name": "com.example.tp_ecommerce"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCv5K7NO6uWe2tKfSc_pLILpj_pFDnw-rE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
