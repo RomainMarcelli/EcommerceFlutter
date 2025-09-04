@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../widgets/app_scaffold.dart';
 import '../models/product.dart';
 import '../services/cart_service.dart';
+import '../routes.dart';
 
 class ProductDetailPage extends StatelessWidget {
   final Product product;
@@ -16,12 +18,24 @@ class ProductDetailPage extends StatelessWidget {
 
     return AppScaffold(
       title: product.title,
-      actions: const [_CartBadgeAction()],
+      actions: [
+        IconButton(
+          tooltip: 'Partager',
+          icon: const Icon(Icons.share),
+          onPressed: () => _shareProduct(product, price),
+        ),
+        IconButton(
+          tooltip: 'Panier',
+          icon: const Icon(Icons.shopping_cart_outlined),
+          onPressed: () => Navigator.pushNamed(context, AppRoutes.cart),
+        ),
+      ],
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Images
             AspectRatio(
               aspectRatio: 1.2,
               child: PageView.builder(
@@ -35,6 +49,8 @@ class ProductDetailPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+
+            // Titre + prix
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -58,6 +74,8 @@ class ProductDetailPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
+
+            // Catégorie
             if (product.category != null &&
                 product.category!.toString().isNotEmpty)
               Padding(
@@ -66,7 +84,10 @@ class ProductDetailPage extends StatelessWidget {
                   label: Text(product.category.toString()),
                 ),
               ),
+
             const SizedBox(height: 16),
+
+            // Description
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -74,7 +95,10 @@ class ProductDetailPage extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
+
             const SizedBox(height: 24),
+
+            // Boutons
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -99,7 +123,8 @@ class ProductDetailPage extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   OutlinedButton(
-                    onPressed: () => Navigator.pushNamed(context, '/cart'),
+                    onPressed: () =>
+                        Navigator.pushNamed(context, AppRoutes.cart),
                     child: const Text('Voir le panier'),
                   ),
                 ],
@@ -115,6 +140,7 @@ class ProductDetailPage extends StatelessWidget {
     final thumbs = <String>[];
     final thumb = _extractThumbnail(p);
     if (thumb != null) thumbs.add(thumb);
+
     final any = (p.images);
     if (any is List) {
       for (final v in any) {
@@ -131,17 +157,15 @@ class ProductDetailPage extends StatelessWidget {
     final t = (p.thumbnail is String) ? p.thumbnail as String : null;
     return (t != null && t.isNotEmpty) ? t : null;
   }
-}
 
-class _CartBadgeAction extends StatelessWidget {
-  const _CartBadgeAction();
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      tooltip: 'Panier',
-      icon: const Icon(Icons.shopping_cart_outlined),
-      onPressed: () => Navigator.pushNamed(context, '/cart'),
-    );
+  void _shareProduct(Product p, double price) {
+    // Message simple et efficace pour share_plus (Web, Android, iOS, Desktop)
+    final url = _extractThumbnail(p); // s’il y a une image, sympa à partager
+    final text = [
+      p.title,
+      '${price.toStringAsFixed(2)} €',
+      if (url != null) url,
+    ].join(' · ');
+    Share.share(text);
   }
 }

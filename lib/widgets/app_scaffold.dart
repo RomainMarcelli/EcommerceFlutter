@@ -22,12 +22,13 @@ class AppScaffold extends StatelessWidget {
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
-        // On force l’icône hamburger même sur les pages poussées (évite la flèche “back”)
+        // On force l’icône hamburger même sur les pages poussées
         automaticallyImplyLeading: false,
         leading: Builder(
           builder: (context) => IconButton(
             icon: const Icon(Icons.menu),
             onPressed: () => Scaffold.of(context).openDrawer(),
+            tooltip: 'Menu',
           ),
         ),
         title: Text(title),

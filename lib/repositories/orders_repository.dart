@@ -9,12 +9,13 @@ class OrdersRepository {
     await _box.add(order.toMap());
   }
 
+  // 🔧 Tri par createdAt DESC (même si l’ordre d’insertion change un jour)
   List<Order> all() {
-    return _box.values
+    final list = _box.values
         .map((e) => Order.fromMap(Map<String, dynamic>.from(e)))
-        .toList()
-        .reversed
         .toList();
+    list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return list;
   }
 
   Future<void> clear() => _box.clear();

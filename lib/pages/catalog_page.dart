@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../widgets/app_scaffold.dart';
+import '../routes.dart';
 import '../models/product.dart';
-import '../repositories/catalog_repository.dart';
+import '../repositories/catalog_repository.dart'; // adapte si tu injectes différemment
 
 class CatalogPage extends StatefulWidget {
   const CatalogPage({super.key});
@@ -12,10 +14,14 @@ class CatalogPage extends StatefulWidget {
 }
 
 class _CatalogPageState extends State<CatalogPage> {
-  final _repo = CatalogRepository();
+  final _repo =
+      CatalogRepository(); // si tu utilises Provider, remplace par context.read<...>()
   late Future<List<Product>> _future;
 
-  final TextEditingController _searchCtrl = TextEditingController();
+  final _searchCtrl = TextEditingController();
+  final _searchFocus = FocusNode();
+  Timer? _debounce;
+
   String _selectedCategory = 'Toutes';
 
   List<Product> _all = [];
@@ -25,36 +31,49 @@ class _CatalogPageState extends State<CatalogPage> {
   void initState() {
     super.initState();
     _future = _load();
-    _searchCtrl.addListener(() => setState(() {}));
+    _searchCtrl.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
+    _debounce?.cancel();
+    _searchCtrl.removeListener(_onSearchChanged);
     _searchCtrl.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
   Future<List<Product>> _load() async {
-    final products = await _repo.fetchProducts();
+    final products = await _repo.fetchProducts(); // Future<List<Product>>
     _all = products;
 
+    // Catégories distinctes (triées)
     final cats = <String>{};
     for (final p in products) {
       final c = (p.category ?? '').toString().trim();
       if (c.isNotEmpty) cats.add(c);
     }
     _categories = ['Toutes', ...cats.toList()..sort()];
-    setState(() {});
+    setState(() {}); // maj UI (dropdown)
     return products;
+  }
+
+  void _onSearchChanged() {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) setState(() {});
+    });
   }
 
   List<Product> get _filtered {
     final q = _searchCtrl.text.trim().toLowerCase();
     final cat = _selectedCategory;
+
     return _all.where((p) {
-      final okTitle = q.isEmpty ? true : p.title.toLowerCase().contains(q);
-      final okCat = (cat == 'Toutes') ? true : p.category?.toString() == cat;
-      return okTitle && okCat;
+      final title = p.title.toString().toLowerCase();
+      final matchTitle = q.isEmpty ? true : title.contains(q);
+      final matchCat = (cat == 'Toutes') ? true : p.category?.toString() == cat;
+      return matchTitle && matchCat;
     }).toList();
   }
 
@@ -67,7 +86,7 @@ class _CatalogPageState extends State<CatalogPage> {
   Widget build(BuildContext context) {
     return AppScaffold(
       title: 'Catalogue',
-      actions: const [_CartBadgeAction()],
+      actions: const [_CartShortcut()],
       body: FutureBuilder<List<Product>>(
         future: _future,
         builder: (context, snap) {
@@ -75,25 +94,7 @@ class _CatalogPageState extends State<CatalogPage> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snap.hasError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.warning_amber_rounded, size: 56),
-                    const SizedBox(height: 12),
-                    const Text('Impossible de charger le catalogue.'),
-                    const SizedBox(height: 12),
-                    FilledButton.icon(
-                      onPressed: _refresh,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Réessayer'),
-                    ),
-                  ],
-                ),
-              ),
-            );
+            return _ErrorView(onRetry: _refresh);
           }
 
           final products = _filtered;
@@ -109,11 +110,22 @@ class _CatalogPageState extends State<CatalogPage> {
                       children: [
                         TextField(
                           controller: _searchCtrl,
+                          focusNode: _searchFocus,
                           textInputAction: TextInputAction.search,
-                          decoration: const InputDecoration(
-                            prefixIcon: Icon(Icons.search),
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(Icons.search),
                             hintText: 'Rechercher un produit…',
-                            border: OutlineInputBorder(),
+                            border: const OutlineInputBorder(),
+                            suffixIcon: (_searchCtrl.text.isEmpty)
+                                ? null
+                                : IconButton(
+                                    tooltip: 'Effacer',
+                                    onPressed: () {
+                                      _searchCtrl.clear();
+                                      _searchFocus.requestFocus();
+                                    },
+                                    icon: const Icon(Icons.clear),
+                                  ),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -139,6 +151,11 @@ class _CatalogPageState extends State<CatalogPage> {
                                     () => _selectedCategory = v ?? 'Toutes'),
                               ),
                             ),
+                            const SizedBox(width: 12),
+                            // Compteur résultats
+                            Chip(
+                              label: Text('${products.length} résultat(s)'),
+                            ),
                           ],
                         ),
                       ],
@@ -148,20 +165,13 @@ class _CatalogPageState extends State<CatalogPage> {
                 if (products.isEmpty)
                   const SliverFillRemaining(
                     hasScrollBody: false,
-                    child: Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Text(
-                            'Aucun produit ne correspond à votre recherche.'),
-                      ),
-                    ),
+                    child: _Empty(),
                   )
                 else
                   SliverList.separated(
-                    itemBuilder: (context, i) =>
-                        _ProductTile(product: products[i]),
-                    separatorBuilder: (_, __) => const Divider(height: 1),
                     itemCount: products.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (_, i) => _ProductTile(product: products[i]),
                   ),
               ],
             ),
@@ -198,21 +208,63 @@ class _ProductTile extends StatelessWidget {
       title: Text(product.title, maxLines: 2, overflow: TextOverflow.ellipsis),
       subtitle: Text('${price.toStringAsFixed(2)} €'
           '${product.category != null ? ' • ${product.category}' : ''}'),
-      onTap: () => Navigator.pushNamed(context, '/product', arguments: product),
+      onTap: () =>
+          Navigator.pushNamed(context, AppRoutes.product, arguments: product),
     );
   }
 }
 
-/// Petit bouton panier avec badge (réutilisé ici simplement)
-class _CartBadgeAction extends StatelessWidget {
-  const _CartBadgeAction();
+class _CartShortcut extends StatelessWidget {
+  const _CartShortcut();
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
       tooltip: 'Panier',
       icon: const Icon(Icons.shopping_cart_outlined),
-      onPressed: () => Navigator.pushNamed(context, '/cart'),
+      onPressed: () => Navigator.pushNamed(context, AppRoutes.cart),
+    );
+  }
+}
+
+class _ErrorView extends StatelessWidget {
+  final Future<void> Function() onRetry;
+  const _ErrorView({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.warning_amber_rounded, size: 56),
+            const SizedBox(height: 12),
+            const Text('Impossible de charger le catalogue.'),
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Réessayer'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Empty extends StatelessWidget {
+  const _Empty();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(24),
+        child: Text('Aucun produit ne correspond à votre recherche.'),
+      ),
     );
   }
 }
