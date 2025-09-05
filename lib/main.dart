@@ -21,6 +21,7 @@ import 'pages/cart_page.dart';
 import 'pages/orders_page.dart';
 import 'pages/product_detail_page.dart';
 import 'pages/checkout_page.dart';
+import 'pages/account_page.dart';
 
 // Models
 import 'models/product.dart';
@@ -90,6 +91,7 @@ class ShopFlutterApp extends StatelessWidget {
           AppRoutes.cart: (_) => const CartPage(),
           AppRoutes.orders: (_) => const OrdersPage(),
           AppRoutes.checkout: (_) => const CheckoutPage(),
+          AppRoutes.account: (_) => const AccountPage(),
         },
 
         // Détail produit : reçoit un Product via settings.arguments
