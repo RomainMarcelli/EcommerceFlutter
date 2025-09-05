@@ -1,0 +1,54 @@
+name: Flutter Web PR Checks
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  pr-checks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java (for tooling)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Flutter 3.35.2
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.35.2"
+          channel: stable
+          cache: true
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Check format
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze (warnings not fatal)
+      run: dart analyze --no-fatal-warnings
+
+      - name: Run tests
+        run: flutter test --no-pub --coverage
+
+      - name: Build Web (release)
+        run: |
+          flutter build web --release \
+            --web-renderer canvaskit \
+            --pwa-strategy offline-first
+
+      - name: Upload build & coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-web-build
+          path: |
+            build/web/**
+            coverage/lcov.info
