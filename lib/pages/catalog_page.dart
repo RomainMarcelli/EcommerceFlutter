@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../widgets/app_scaffold.dart';
 import '../routes.dart';
 import '../models/product.dart';
-import '../repositories/catalog_repository.dart'; // adapte si tu injectes différemment
+import '../repositories/catalog_repository.dart';
 
 class CatalogPage extends StatefulWidget {
   const CatalogPage({super.key});
@@ -14,8 +14,7 @@ class CatalogPage extends StatefulWidget {
 }
 
 class _CatalogPageState extends State<CatalogPage> {
-  final _repo =
-      CatalogRepository(); // si tu utilises Provider, remplace par context.read<...>()
+  final _repo = CatalogRepository();
   late Future<List<Product>> _future;
 
   final _searchCtrl = TextEditingController();
@@ -44,17 +43,16 @@ class _CatalogPageState extends State<CatalogPage> {
   }
 
   Future<List<Product>> _load() async {
-    final products = await _repo.fetchProducts(); // Future<List<Product>>
+    final products = await _repo.fetchProducts();
     _all = products;
 
-    // Catégories distinctes (triées)
     final cats = <String>{};
     for (final p in products) {
       final c = (p.category ?? '').toString().trim();
       if (c.isNotEmpty) cats.add(c);
     }
     _categories = ['Toutes', ...cats.toList()..sort()];
-    setState(() {}); // maj UI (dropdown)
+    setState(() {});
     return products;
   }
 
@@ -152,10 +150,7 @@ class _CatalogPageState extends State<CatalogPage> {
                               ),
                             ),
                             const SizedBox(width: 12),
-                            // Compteur résultats
-                            Chip(
-                              label: Text('${products.length} résultat(s)'),
-                            ),
+                            Chip(label: Text('${products.length} résultat(s)')),
                           ],
                         ),
                       ],
@@ -168,10 +163,21 @@ class _CatalogPageState extends State<CatalogPage> {
                     child: _Empty(),
                   )
                 else
-                  SliverList.separated(
-                    itemCount: products.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (_, i) => _ProductTile(product: products[i]),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    sliver: SliverGrid(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, i) => _ProductCardGrid(product: products[i]),
+                        childCount: products.length,
+                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 0.65,
+                      ),
+                    ),
                   ),
               ],
             ),
@@ -182,34 +188,109 @@ class _CatalogPageState extends State<CatalogPage> {
   }
 }
 
-class _ProductTile extends StatelessWidget {
+class _ProductCardGrid extends StatelessWidget {
   final Product product;
-  const _ProductTile({required this.product});
+  const _ProductCardGrid({required this.product});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final price = (product.price as num).toDouble();
     final thumb = (product.thumbnail is String &&
             (product.thumbnail as String).isNotEmpty)
         ? product.thumbnail as String
         : null;
+    final category = (product.category?.toString().trim().isNotEmpty ?? false)
+        ? product.category.toString()
+        : 'Sans catégorie';
 
-    return ListTile(
-      leading: thumb != null
-          ? Image.network(
-              thumb,
-              width: 56,
-              height: 56,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
-                  const Icon(Icons.broken_image_outlined),
-            )
-          : const Icon(Icons.image_outlined),
-      title: Text(product.title, maxLines: 2, overflow: TextOverflow.ellipsis),
-      subtitle: Text('${price.toStringAsFixed(2)} €'
-          '${product.category != null ? ' • ${product.category}' : ''}'),
-      onTap: () =>
-          Navigator.pushNamed(context, AppRoutes.product, arguments: product),
+    return Material(
+      color: theme.cardColor,
+      elevation: 2,
+      borderRadius: BorderRadius.circular(16),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => Navigator.pushNamed(
+          context,
+          AppRoutes.product,
+          arguments: product,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AspectRatio(
+                aspectRatio: 1,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: thumb != null
+                      ? Image.network(
+                          thumb,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const ColoredBox(
+                            color: Color(0x11000000),
+                            child: Center(
+                              child: Icon(Icons.broken_image_outlined),
+                            ),
+                          ),
+                        )
+                      : const ColoredBox(
+                          color: Color(0x11000000),
+                          child: Center(child: Icon(Icons.image_outlined)),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                product.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '${price.toStringAsFixed(2)} €',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const Spacer(),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      category,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.add_shopping_cart, size: 16),
+                    label: const Text('Ajouter'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
