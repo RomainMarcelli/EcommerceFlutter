@@ -1,7 +1,7 @@
 import '../models/cart_item.dart';
 
 class Order {
-  final String id;          // ex: timestamp
+  final String id; // ex: timestamp
   final DateTime createdAt;
   final List<CartItem> lines;
   final double total;
