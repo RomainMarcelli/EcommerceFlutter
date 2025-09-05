@@ -13,7 +13,6 @@ class AccountPage extends StatefulWidget {
 class _AccountPageState extends State<AccountPage> {
   final _nameCtrl = TextEditingController();
   bool _loadingName = false;
-  bool _loadingVerify = false;
   bool _loadingDelete = false;
 
   @override
@@ -45,8 +44,6 @@ class _AccountPageState extends State<AccountPage> {
         return "Action sensible : reconnecte-toi.";
       case 'wrong-password':
         return "Mot de passe actuel incorrect.";
-      case 'user-mismatch':
-        return "L’utilisateur ne correspond pas.";
       case 'user-not-found':
         return "Utilisateur introuvable.";
       case 'network-request-failed':
@@ -62,6 +59,7 @@ class _AccountPageState extends State<AccountPage> {
       await _user.updateDisplayName(_nameCtrl.text.trim());
       await _user.reload();
       _showSnack('Nom mis à jour ✅');
+      if (mounted) setState(() {});
     } on FirebaseAuthException catch (e) {
       _showSnack('Erreur: ${_mapAuthError(e)}');
     } finally {
@@ -69,25 +67,15 @@ class _AccountPageState extends State<AccountPage> {
     }
   }
 
-  Future<void> _sendVerifyEmail() async {
-    setState(() => _loadingVerify = true);
-    try {
-      await _user.sendEmailVerification();
-      _showSnack('Email de vérification envoyé 📧');
-    } on FirebaseAuthException catch (e) {
-      _showSnack('Erreur: ${_mapAuthError(e)}');
-    } finally {
-      if (mounted) setState(() => _loadingVerify = false);
-    }
-  }
-
+  /// Changement d'email SANS envoi de mail (update direct après re-auth).
   Future<void> _changeEmail() async {
     final emailCtrl = TextEditingController(text: _user.email ?? '');
     final pwdCtrl = TextEditingController();
+
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Changer d’email'),
+        title: const Text('Changer d’email (sans confirmation)'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -111,70 +99,74 @@ class _AccountPageState extends State<AccountPage> {
           ],
         ),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Annuler')),
-          FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Valider')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Valider')),
         ],
       ),
     );
     if (ok != true) return;
 
     try {
-      final cred = EmailAuthProvider.credential(
-          email: _user.email!, password: pwdCtrl.text);
+      // Re-auth pour action sensible
+      final cred = EmailAuthProvider.credential(email: _user.email!, password: pwdCtrl.text);
       await _user.reauthenticateWithCredential(cred);
-      await _user.updateEmail(emailCtrl.text.trim());
-      await _user.sendEmailVerification();
-      _showSnack('Email mis à jour. Vérifie ta boîte mail 📧');
-      setState(() {}); // refresh UI
+
+      // Mise à jour directe de l'email (AUCUN mail envoyé)
+      final newEmail = emailCtrl.text.trim();
+      await _user.updateEmail(newEmail);
+
+      _showSnack('Email mis à jour ✅');
+
+      // Rafraîchir l’utilisateur pour refléter la nouvelle valeur
+      await _user.reload();
+      if (mounted) setState(() {});
     } on FirebaseAuthException catch (e) {
       _showSnack('Erreur: ${_mapAuthError(e)}');
     }
   }
 
+  /// Changement de mot de passe SANS email (update direct après re-auth).
   Future<void> _changePassword() async {
     final currentCtrl = TextEditingController();
     final newCtrl = TextEditingController();
     final confirmCtrl = TextEditingController();
+
+    bool obscure1 = true, obscure2 = true, obscure3 = true;
+
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (context, setStateDialog) {
-          bool obscure1 = true, obscure2 = true, obscure3 = true;
           return AlertDialog(
             title: const Text('Changer le mot de passe'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 _PwdField(
-                    label: 'Mot de passe actuel',
-                    controller: currentCtrl,
-                    obscure: obscure1,
-                    onToggle: () => setStateDialog(() => obscure1 = !obscure1)),
+                  label: 'Mot de passe actuel',
+                  controller: currentCtrl,
+                  obscure: obscure1,
+                  onToggle: () => setStateDialog(() => obscure1 = !obscure1),
+                ),
                 const SizedBox(height: 12),
                 _PwdField(
-                    label: 'Nouveau mot de passe',
-                    controller: newCtrl,
-                    obscure: obscure2,
-                    onToggle: () => setStateDialog(() => obscure2 = !obscure2)),
+                  label: 'Nouveau mot de passe',
+                  controller: newCtrl,
+                  obscure: obscure2,
+                  onToggle: () => setStateDialog(() => obscure2 = !obscure2),
+                ),
                 const SizedBox(height: 12),
                 _PwdField(
-                    label: 'Confirmer le nouveau',
-                    controller: confirmCtrl,
-                    obscure: obscure3,
-                    onToggle: () => setStateDialog(() => obscure3 = !obscure3)),
+                  label: 'Confirmer le nouveau',
+                  controller: confirmCtrl,
+                  obscure: obscure3,
+                  onToggle: () => setStateDialog(() => obscure3 = !obscure3),
+                ),
               ],
             ),
             actions: [
-              TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Annuler')),
-              FilledButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Mettre à jour')),
+              TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
+              FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Mettre à jour')),
             ],
           );
         },
@@ -192,8 +184,7 @@ class _AccountPageState extends State<AccountPage> {
     }
 
     try {
-      final cred = EmailAuthProvider.credential(
-          email: _user.email!, password: currentCtrl.text);
+      final cred = EmailAuthProvider.credential(email: _user.email!, password: currentCtrl.text);
       await _user.reauthenticateWithCredential(cred);
       await _user.updatePassword(newCtrl.text);
       _showSnack('Mot de passe mis à jour ✅');
@@ -211,8 +202,7 @@ class _AccountPageState extends State<AccountPage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-                "Cette action est irréversible. Entrez votre mot de passe pour confirmer."),
+            const Text("Cette action est irréversible. Entrez votre mot de passe pour confirmer."),
             const SizedBox(height: 12),
             TextField(
               controller: pwdCtrl,
@@ -225,12 +215,8 @@ class _AccountPageState extends State<AccountPage> {
           ],
         ),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Annuler')),
-          FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Supprimer')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Supprimer')),
         ],
       ),
     );
@@ -238,13 +224,12 @@ class _AccountPageState extends State<AccountPage> {
 
     setState(() => _loadingDelete = true);
     try {
-      final cred = EmailAuthProvider.credential(
-          email: _user.email!, password: pwdCtrl.text);
+      final cred = EmailAuthProvider.credential(email: _user.email!, password: pwdCtrl.text);
       await _user.reauthenticateWithCredential(cred);
       await _user.delete();
       if (!mounted) return;
       _showSnack('Compte supprimé');
-      // L’authStateChanges() te renverra vers /login automatiquement
+      // authStateChanges() redirigera vers /login
     } on FirebaseAuthException catch (e) {
       _showSnack('Erreur: ${_mapAuthError(e)}');
     } finally {
@@ -256,69 +241,39 @@ class _AccountPageState extends State<AccountPage> {
   Widget build(BuildContext context) {
     final user = _user;
     final email = user.email ?? '—';
-    final verified = user.emailVerified;
     final photo = user.photoURL;
+    final displayName = user.displayName ?? '';
 
     return AppScaffold(
       title: 'Mon compte',
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
-          // Header
+          // ===== Header =====
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               CircleAvatar(
                 radius: 30,
-                backgroundImage: (photo != null && photo.isNotEmpty)
-                    ? NetworkImage(photo)
-                    : null,
+                backgroundImage: (photo != null && photo.isNotEmpty) ? NetworkImage(photo) : null,
                 child: (photo == null || photo.isEmpty)
-                    ? Text((user.displayName?.isNotEmpty ?? false)
-                        ? user.displayName!.characters.first.toUpperCase()
-                        : (email.isNotEmpty
-                            ? email.characters.first.toUpperCase()
-                            : '?'))
+                    ? Text(
+                        displayName.isNotEmpty
+                            ? displayName.characters.first.toUpperCase()
+                            : (email.isNotEmpty ? email.characters.first.toUpperCase() : '?'),
+                      )
                     : null,
               ),
               const SizedBox(width: 16),
-              Expanded(
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(email, style: Theme.of(context).textTheme.titleMedium),
-                    verified
-                        ? const Chip(
-                            label: Text('Email vérifié'),
-                            avatar: Icon(Icons.verified, size: 16))
-                        : const Chip(
-                            label: Text('Email non vérifié'),
-                            avatar: Icon(Icons.warning_amber, size: 16)),
-                    if (!verified)
-                      FilledButton.tonal(
-                        onPressed: _loadingVerify ? null : _sendVerifyEmail,
-                        child: _loadingVerify
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2))
-                            : const Text('Vérifier mon email'),
-                      ),
-                  ],
-                ),
-              ),
+              Expanded(child: Text(email, style: Theme.of(context).textTheme.titleMedium)),
             ],
           ),
 
           const SizedBox(height: 16),
           const Divider(),
 
-          // Nom d'affichage
-          Text('Nom d’affichage',
-              style: Theme.of(context).textTheme.titleMedium),
+          // ===== Nom d'affichage =====
+          Text('Nom d’affichage', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -336,10 +291,7 @@ class _AccountPageState extends State<AccountPage> {
               FilledButton(
                 onPressed: _loadingName ? null : _updateDisplayName,
                 child: _loadingName
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
                     : const Text('Enregistrer'),
               ),
             ],
@@ -348,7 +300,7 @@ class _AccountPageState extends State<AccountPage> {
           const SizedBox(height: 24),
           const Divider(),
 
-          // Sécurité
+          // ===== Sécurité =====
           Text('Sécurité', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           ListTile(
@@ -367,16 +319,12 @@ class _AccountPageState extends State<AccountPage> {
 
           const SizedBox(height: 8),
           ListTile(
-            leading:
-                const Icon(Icons.delete_forever_outlined, color: Colors.red),
+            leading: const Icon(Icons.delete_forever_outlined, color: Colors.red),
             title: const Text('Supprimer mon compte'),
             textColor: Colors.red,
             iconColor: Colors.red,
             trailing: _loadingDelete
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
                 : const Icon(Icons.chevron_right),
             onTap: _loadingDelete ? null : _deleteAccount,
           ),
