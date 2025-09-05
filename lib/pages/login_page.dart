@@ -121,9 +121,8 @@ class _LoginPageState extends State<LoginPage> {
               padding: const EdgeInsets.all(24),
               child: Card(
                 elevation: 0,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-                child: Padding(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                child: SingleChildScrollView(
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -133,6 +132,7 @@ class _LoginPageState extends State<LoginPage> {
                       Text(
                         _isLogin ? 'Connexion' : 'Créer un compte',
                         style: Theme.of(context).textTheme.headlineSmall,
+                        textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),
                       Form(
@@ -140,6 +140,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: Column(
                           children: [
                             TextFormField(
+                              key: const Key('email_field'),
                               controller: _emailCtrl,
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.next,
@@ -159,6 +160,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             const SizedBox(height: 12),
                             TextFormField(
+                              key: const Key('password_field'),
                               controller: _pwdCtrl,
                               obscureText: _obscure,
                               decoration: InputDecoration(
@@ -166,11 +168,8 @@ class _LoginPageState extends State<LoginPage> {
                                 prefixIcon: const Icon(Icons.lock_outline),
                                 border: const OutlineInputBorder(),
                                 suffixIcon: IconButton(
-                                  onPressed: () =>
-                                      setState(() => _obscure = !_obscure),
-                                  icon: Icon(_obscure
-                                      ? Icons.visibility
-                                      : Icons.visibility_off),
+                                  onPressed: () => setState(() => _obscure = !_obscure),
+                                  icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
                                   tooltip: _obscure ? 'Afficher' : 'Masquer',
                                 ),
                               ),
@@ -194,33 +193,34 @@ class _LoginPageState extends State<LoginPage> {
                             SizedBox(
                               width: double.infinity,
                               child: FilledButton(
+                                key: const Key('login_btn'),
                                 onPressed: _loading ? null : _submit,
                                 child: _loading
                                     ? const SizedBox(
                                         height: 20,
                                         width: 20,
-                                        child: CircularProgressIndicator(
-                                            strokeWidth: 2),
+                                        child: CircularProgressIndicator(strokeWidth: 2),
                                       )
-                                    : Text(_isLogin
-                                        ? 'Se connecter'
-                                        : 'Créer le compte'),
+                                    : Text(_isLogin ? 'Se connecter' : 'Créer le compte'),
                               ),
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      // Remplace la Row par un Wrap pour éviter tout overflow horizontal
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 6,
+                        runSpacing: 4,
                         children: [
                           Text(_isLogin ? "Pas de compte ?" : "Déjà inscrit ?"),
                           TextButton(
                             onPressed: _loading
                                 ? null
                                 : () => setState(() => _isLogin = !_isLogin),
-                            child: Text(
-                                _isLogin ? 'Créer un compte' : 'Se connecter'),
+                            child: Text(_isLogin ? 'Créer un compte' : 'Se connecter'),
                           ),
                         ],
                       ),

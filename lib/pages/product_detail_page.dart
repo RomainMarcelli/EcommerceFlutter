@@ -35,22 +35,42 @@ class ProductDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Images
-            AspectRatio(
-              aspectRatio: 1.2,
-              child: PageView.builder(
-                itemCount: images.length,
-                itemBuilder: (_, i) => Image.network(
-                  images[i],
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) =>
-                      const Center(child: Icon(Icons.broken_image, size: 56)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: AspectRatio(
+                aspectRatio: 1.2,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                      width: 2,
+                    ),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .surfaceVariant
+                        .withOpacity(0.15),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: PageView.builder(
+                        itemCount: images.length,
+                        itemBuilder: (_, i) => Image.network(
+                          images[i],
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Center(
+                            child: Icon(Icons.broken_image, size: 56),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 16),
-
-            // Titre + prix
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -74,20 +94,13 @@ class ProductDetailPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-
-            // Catégorie
             if (product.category != null &&
                 product.category!.toString().isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Chip(
-                  label: Text(product.category.toString()),
-                ),
+                child: Chip(label: Text(product.category.toString())),
               ),
-
             const SizedBox(height: 16),
-
-            // Description
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -95,36 +108,46 @@ class ProductDetailPage extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
-
             const SizedBox(height: 24),
-
-            // Boutons
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 8,
                 children: [
-                  Expanded(
-                    child: FilledButton.icon(
-                      icon: const Icon(Icons.add_shopping_cart),
-                      label: const Text('Ajouter au panier'),
-                      onPressed: () {
-                        final cart = context.read<CartService>();
-                        cart.addItem(
-                          productId: product.id as int,
-                          title: product.title,
-                          price: price,
-                          thumbnail: _extractThumbnail(product),
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Ajouté au panier')),
-                        );
-                      },
+                  FilledButton.icon(
+                    icon: const Icon(Icons.add_shopping_cart),
+                    label: const Text('Ajouter au panier'),
+                    onPressed: () {
+                      final cart = context.read<CartService>();
+                      cart.addItem(
+                        productId: product.id as int,
+                        title: product.title,
+                        price: price,
+                        thumbnail: _extractThumbnail(product),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Ajouté au panier')),
+                      );
+                    },
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 12,
+                      ),
+                      minimumSize: const Size(0, 44),
                     ),
                   ),
-                  const SizedBox(width: 12),
                   OutlinedButton(
                     onPressed: () =>
                         Navigator.pushNamed(context, AppRoutes.cart),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 12,
+                      ),
+                      minimumSize: const Size(0, 44),
+                    ),
                     child: const Text('Voir le panier'),
                   ),
                 ],
@@ -159,8 +182,7 @@ class ProductDetailPage extends StatelessWidget {
   }
 
   void _shareProduct(Product p, double price) {
-    // Message simple et efficace pour share_plus (Web, Android, iOS, Desktop)
-    final url = _extractThumbnail(p); // s’il y a une image, sympa à partager
+    final url = _extractThumbnail(p);
     final text = [
       p.title,
       '${price.toStringAsFixed(2)} €',
