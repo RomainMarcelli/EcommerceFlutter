@@ -122,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
               child: Card(
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: Padding(
+                child: SingleChildScrollView(
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -132,6 +132,7 @@ class _LoginPageState extends State<LoginPage> {
                       Text(
                         _isLogin ? 'Connexion' : 'Créer un compte',
                         style: Theme.of(context).textTheme.headlineSmall,
+                        textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),
                       Form(
@@ -139,6 +140,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: Column(
                           children: [
                             TextFormField(
+                              key: const Key('email_field'),
                               controller: _emailCtrl,
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.next,
@@ -158,6 +160,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             const SizedBox(height: 12),
                             TextFormField(
+                              key: const Key('password_field'),
                               controller: _pwdCtrl,
                               obscureText: _obscure,
                               decoration: InputDecoration(
@@ -190,6 +193,7 @@ class _LoginPageState extends State<LoginPage> {
                             SizedBox(
                               width: double.infinity,
                               child: FilledButton(
+                                key: const Key('login_btn'),
                                 onPressed: _loading ? null : _submit,
                                 child: _loading
                                     ? const SizedBox(
@@ -204,8 +208,12 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      // Remplace la Row par un Wrap pour éviter tout overflow horizontal
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 6,
+                        runSpacing: 4,
                         children: [
                           Text(_isLogin ? "Pas de compte ?" : "Déjà inscrit ?"),
                           TextButton(
