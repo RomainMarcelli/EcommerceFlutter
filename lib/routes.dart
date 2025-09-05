@@ -6,5 +6,5 @@ class AppRoutes {
   static const cart = '/cart';
   static const checkout = '/checkout';
   static const orders = '/orders';
-  static const account = '/account'; 
+  static const account = '/account';
 }
