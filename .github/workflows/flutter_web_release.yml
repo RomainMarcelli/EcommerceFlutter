@@ -1,0 +1,77 @@
+name: Flutter Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  android-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Pub get
+        run: flutter pub get
+
+      # Optionnel: build_runner/codegen
+      # - run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Decode keystore
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
+        shell: bash
+
+      - name: Configure keystore gradle properties
+        run: |
+          cat >> android/gradle.properties <<'EOF'
+          MYAPP_UPLOAD_STORE_FILE=release.keystore
+          MYAPP_UPLOAD_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}
+          MYAPP_UPLOAD_STORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          MYAPP_UPLOAD_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}
+          EOF
+
+      - name: Inject signing config (if not already in app/build.gradle)
+        run: |
+          sed -i 's/storeFile file(MYAPP_UPLOAD_STORE_FILE)/storeFile file(MYAPP_UPLOAD_STORE_FILE ?: "release.keystore")/' android/app/build.gradle || true
+
+      - name: Build AAB (release)
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          flutter build appbundle --release \
+            --dart-define=ENV=prod
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release
+          path: |
+            build/app/outputs/bundle/release/*.aab
+            build/app/outputs/mapping/release/mapping.txt
+
+      # Optionnel: Upload Play Console via fastlane supply ou github action dédiée
+      # - name: Upload to Play
+      #   uses: r0adkll/upload-google-play@v1
+      #   with:
+      #     serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+      #     packageName: com.example.app
+      #     releaseFiles: build/app/outputs/bundle/release/app-release.aab
+      #     track: internal
