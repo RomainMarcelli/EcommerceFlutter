@@ -121,7 +121,8 @@ class _LoginPageState extends State<LoginPage> {
               padding: const EdgeInsets.all(24),
               child: Card(
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
@@ -165,8 +166,11 @@ class _LoginPageState extends State<LoginPage> {
                                 prefixIcon: const Icon(Icons.lock_outline),
                                 border: const OutlineInputBorder(),
                                 suffixIcon: IconButton(
-                                  onPressed: () => setState(() => _obscure = !_obscure),
-                                  icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
+                                  onPressed: () =>
+                                      setState(() => _obscure = !_obscure),
+                                  icon: Icon(_obscure
+                                      ? Icons.visibility
+                                      : Icons.visibility_off),
                                   tooltip: _obscure ? 'Afficher' : 'Masquer',
                                 ),
                               ),
@@ -195,9 +199,12 @@ class _LoginPageState extends State<LoginPage> {
                                     ? const SizedBox(
                                         height: 20,
                                         width: 20,
-                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2),
                                       )
-                                    : Text(_isLogin ? 'Se connecter' : 'Créer le compte'),
+                                    : Text(_isLogin
+                                        ? 'Se connecter'
+                                        : 'Créer le compte'),
                               ),
                             ),
                           ],
@@ -212,7 +219,8 @@ class _LoginPageState extends State<LoginPage> {
                             onPressed: _loading
                                 ? null
                                 : () => setState(() => _isLogin = !_isLogin),
-                            child: Text(_isLogin ? 'Créer un compte' : 'Se connecter'),
+                            child: Text(
+                                _isLogin ? 'Créer un compte' : 'Se connecter'),
                           ),
                         ],
                       ),
