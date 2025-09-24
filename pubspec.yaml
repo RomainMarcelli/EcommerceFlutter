@@ -8,6 +8,7 @@ environment:
   sdk: '>=3.9.0 <4.0.0' # adapté à ton SDK/Dart actuel
 
 dependencies:
+  google_sign_in: ^6.2.1
   flutter:
     sdk: flutter
 
