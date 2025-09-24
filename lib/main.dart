@@ -71,7 +71,6 @@ class ShopFlutterApp extends StatelessWidget {
         home: StreamBuilder<User?>(
           stream: FirebaseAuth.instance.authStateChanges(),
           builder: (context, snapshot) {
-            // Écran d'attente
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Scaffold(
                 body: Center(child: CircularProgressIndicator()),
@@ -79,20 +78,11 @@ class ShopFlutterApp extends StatelessWidget {
             }
 
             final bool isLoggedIn = snapshot.data != null;
-            final String target = isLoggedIn ? AppRoutes.home : AppRoutes.login;
 
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              final current = ModalRoute.of(context)?.settings.name;
-              if (current != target) {
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  target,
-                  (route) => false,
-                );
-              }
-            });
-
-            // Page tampon minimale pendant la redirection
-            return const Scaffold(body: SizedBox.shrink());
+            // Redirige automatiquement vers login ou home
+            return isLoggedIn
+                ? const HomePage()
+                : const LoginPage();
           },
         ),
 
@@ -103,7 +93,8 @@ class ShopFlutterApp extends StatelessWidget {
           AppRoutes.cart: (_) => const CartPage(),
           AppRoutes.orders: (_) => const OrdersPage(),
           AppRoutes.checkout: (_) => const CheckoutPage(),
-          AppRoutes.account: (_) => const AccountPage(),
+          AppRoutes.account: (_) =>
+              AccountPage(auth: FirebaseAuth.instance), // paramètre auth requis
         },
 
         onGenerateRoute: (settings) {
@@ -115,7 +106,6 @@ class ShopFlutterApp extends StatelessWidget {
           if (m != null) {
             final idFromUrl = m.group(1)!;
 
-            // Si un Product est passé en argument (navigation interne), on l'utilise
             final arg = settings.arguments;
             if (arg is Product) {
               return MaterialPageRoute(
@@ -124,7 +114,7 @@ class ShopFlutterApp extends StatelessWidget {
               );
             }
 
-            // Fallback temporaire si non implémenté
+            // fallback si produit non passé en argument
             return MaterialPageRoute(
               builder: (_) => Scaffold(
                 appBar: AppBar(title: const Text('Produit')),
@@ -132,7 +122,9 @@ class ShopFlutterApp extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(24),
                     child: Text(
-                      'Produit $idFromUrl non chargé.\nOuvre depuis le catalogue pour passer l’objet Product en arguments, ou implémente un fetch par ID.',
+                      'Produit $idFromUrl non chargé.\n'
+                      'Ouvre depuis le catalogue pour passer l’objet Product en arguments, '
+                      'ou implémente un fetch par ID.',
                       textAlign: TextAlign.center,
                     ),
                   ),

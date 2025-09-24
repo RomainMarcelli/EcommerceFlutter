@@ -4,22 +4,23 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../widgets/app_scaffold.dart';
 
 class AccountPage extends StatefulWidget {
-  const AccountPage({super.key});
+  final FirebaseAuth auth;
+  const AccountPage({super.key, required this.auth});
 
   @override
   State<AccountPage> createState() => _AccountPageState();
 }
 
 class _AccountPageState extends State<AccountPage> {
-  final _nameCtrl = TextEditingController();
+  late final TextEditingController _nameCtrl;
   bool _loadingName = false;
   bool _loadingDelete = false;
 
   @override
   void initState() {
     super.initState();
-    final u = FirebaseAuth.instance.currentUser;
-    _nameCtrl.text = u?.displayName ?? '';
+    final u = widget.auth.currentUser;
+    _nameCtrl = TextEditingController(text: u?.displayName ?? '');
   }
 
   @override
@@ -28,7 +29,7 @@ class _AccountPageState extends State<AccountPage> {
     super.dispose();
   }
 
-  User get _user => FirebaseAuth.instance.currentUser!;
+  User get _user => widget.auth.currentUser!;
 
   void _showSnack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
