@@ -78,11 +78,9 @@ class ShopFlutterApp extends StatelessWidget {
               );
             }
 
-            // Détermine la cible selon l'auth
             final bool isLoggedIn = snapshot.data != null;
             final String target = isLoggedIn ? AppRoutes.home : AppRoutes.login;
 
-            // Important : déclencher la navigation APRÈS le build
             WidgetsBinding.instance.addPostFrameCallback((_) {
               final current = ModalRoute.of(context)?.settings.name;
               if (current != target) {
@@ -98,7 +96,6 @@ class ShopFlutterApp extends StatelessWidget {
           },
         ),
 
-        // Routes nommées "statiques"
         routes: {
           AppRoutes.login: (_) => const LoginPage(),
           AppRoutes.home: (_) => const HomePage(),
@@ -107,14 +104,11 @@ class ShopFlutterApp extends StatelessWidget {
           AppRoutes.orders: (_) => const OrdersPage(),
           AppRoutes.checkout: (_) => const CheckoutPage(),
           AppRoutes.account: (_) => const AccountPage(),
-          // NE METS PAS AppRoutes.product ici, on le gère en dynamique ci-dessous
         },
 
-        // Routes "dynamiques" : /product/<id>
         onGenerateRoute: (settings) {
           final name = settings.name ?? '';
 
-          // ex: AppRoutes.product == '/product'  -> on accepte /product/123
           final reg = RegExp('^${AppRoutes.product}/(\\w+)\$');
           final m = reg.firstMatch(name);
 
@@ -129,12 +123,6 @@ class ShopFlutterApp extends StatelessWidget {
                 settings: settings,
               );
             }
-
-            // Deep link ou refresh direct : ici, tu peux récupérer le produit via un repo.
-            // Exemple si tu exposes un CatalogRepository au niveau supérieur :
-            // final repo = _.read<CatalogRepository>();
-            // final product = await repo.fetchById(idFromUrl);
-            // return MaterialPageRoute(builder: (_) => ProductDetailPage(product: product));
 
             // Fallback temporaire si non implémenté
             return MaterialPageRoute(
@@ -154,7 +142,6 @@ class ShopFlutterApp extends StatelessWidget {
             );
           }
 
-          // Compat : ancienne route /product sans id
           if (name == AppRoutes.product && settings.arguments is Product) {
             final product = settings.arguments as Product;
             return MaterialPageRoute(
