@@ -9,9 +9,7 @@ class ThirdPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Third Page')),
       drawer: const AppDrawer(),
-      body: const Center(
-        child: Text('This is the third page'),
-      ),
+      body: const Center(child: Text('This is the third page')),
     );
   }
 }

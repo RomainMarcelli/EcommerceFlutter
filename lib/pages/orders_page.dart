@@ -26,7 +26,8 @@ class OrdersPage extends StatelessWidget {
                 builder: (_) => AlertDialog(
                   title: const Text('Vider l’historique ?'),
                   content: const Text(
-                      'Cette action supprimera toutes les commandes locales.'),
+                    'Cette action supprimera toutes les commandes locales.',
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context, false),
@@ -55,14 +56,19 @@ class OrdersPage extends StatelessWidget {
               separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (_, i) {
                 final o = orders[i];
-                final itemsCount =
-                    o.lines.fold<int>(0, (s, e) => s + e.quantity);
+                final itemsCount = o.lines.fold<int>(
+                  0,
+                  (s, e) => s + e.quantity,
+                );
                 return ListTile(
                   title: Text('Commande #${o.id}'),
-                  subtitle:
-                      Text('${o.createdAt.toLocal()} • $itemsCount article(s)'),
-                  trailing: Text('${o.total.toStringAsFixed(2)} €',
-                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text(
+                    '${o.createdAt.toLocal()} • $itemsCount article(s)',
+                  ),
+                  trailing: Text(
+                    '${o.total.toStringAsFixed(2)} €',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   onTap: () => _showOrderDetails(context, o),
                 );
               },
@@ -81,8 +87,10 @@ class OrdersPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Commande #${order.id}',
-                    style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  'Commande #${order.id}',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const SizedBox(height: 8),
                 Text('Date : ${order.createdAt.toLocal()}'),
                 const SizedBox(height: 12),
@@ -93,13 +101,21 @@ class OrdersPage extends StatelessWidget {
                     itemBuilder: (_, i) {
                       final line = order.lines[i];
                       return ListTile(
-                        leading: (line.thumbnail != null &&
+                        leading:
+                            (line.thumbnail != null &&
                                 line.thumbnail!.isNotEmpty)
-                            ? Image.network(line.thumbnail!,
-                                width: 48, height: 48, fit: BoxFit.cover)
+                            ? Image.network(
+                                line.thumbnail!,
+                                width: 48,
+                                height: 48,
+                                fit: BoxFit.cover,
+                              )
                             : const Icon(Icons.image_outlined),
-                        title: Text(line.title,
-                            maxLines: 2, overflow: TextOverflow.ellipsis),
+                        title: Text(
+                          line.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                         subtitle: Text(
                           '${line.price.toStringAsFixed(2)} € • x${line.quantity}',
                         ),
@@ -115,8 +131,10 @@ class OrdersPage extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: Text('Total : ${order.total.toStringAsFixed(2)} €',
-                          style: Theme.of(context).textTheme.titleMedium),
+                      child: Text(
+                        'Total : ${order.total.toStringAsFixed(2)} €',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                     ),
                     FilledButton(
                       onPressed: () => Navigator.pop(context),

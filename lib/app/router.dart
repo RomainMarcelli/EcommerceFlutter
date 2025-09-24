@@ -16,13 +16,7 @@ final router = GoRouter(
     return null;
   },
   routes: [
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginPage(),
-    ),
-    GoRoute(
-      path: '/catalog',
-      builder: (context, state) => const CatalogPage(),
-    ),
+    GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+    GoRoute(path: '/catalog', builder: (context, state) => const CatalogPage()),
   ],
 );

@@ -42,8 +42,9 @@ class AppDrawer extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 28,
-                      backgroundImage:
-                          (photo.isNotEmpty) ? NetworkImage(photo) : null,
+                      backgroundImage: (photo.isNotEmpty)
+                          ? NetworkImage(photo)
+                          : null,
                       child: (photo.isEmpty) ? Text(_initial()) : null,
                     ),
                     const SizedBox(width: 12),
@@ -139,9 +140,9 @@ class AppDrawer extends StatelessWidget {
 
                 if (context.mounted) {
                   Navigator.pop(context); // ferme le drawer si encore ouvert
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Déconnecté')),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Déconnecté')));
                   Navigator.pushNamedAndRemoveUntil(
                     context,
                     AppRoutes.login,

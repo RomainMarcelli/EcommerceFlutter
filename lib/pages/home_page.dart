@@ -1,8 +1,13 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/app_scaffold.dart';
 import '../services/cart_service.dart';
+
+// Utils spécifiques web (conditionnels)
+import '../utils/web_utils.dart'
+    if (dart.library.html) '../utils/web_utils_web.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -79,6 +84,18 @@ class _HomeContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _HeroBanner(),
+                const SizedBox(height: 16),
+
+                // 🔹 Bouton spécial Web/Chrome uniquement
+                if (kIsWeb && WebUtils.isChrome())
+                  Center(
+                    child: OutlinedButton.icon(
+                      onPressed: WebUtils.openPlayStore,
+                      icon: const Icon(Icons.download),
+                      label: const Text("Installer sur Google Play"),
+                    ),
+                  ),
+
                 const SizedBox(height: 16),
                 _QuickActions(),
                 const SizedBox(height: 8),
@@ -232,8 +249,9 @@ class _CartSummary extends StatelessWidget {
               ? 'Vous avez $itemsCount article(s) dans le panier'
               : 'Votre panier est vide',
         ),
-        subtitle:
-            hasItems ? Text('Total : ${total.toStringAsFixed(2)} €') : null,
+        subtitle: hasItems
+            ? Text('Total : ${total.toStringAsFixed(2)} €')
+            : null,
         trailing: FilledButton(
           onPressed: onGoToCart,
           child: Text(hasItems ? 'Voir le panier' : 'Voir le catalogue'),

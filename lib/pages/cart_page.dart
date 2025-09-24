@@ -20,76 +20,98 @@ class CartPage extends StatelessWidget {
             tooltip: 'Vider le panier',
             onPressed: () {
               cart.clear();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Panier vidé')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Panier vidé')));
             },
             icon: const Icon(Icons.delete_sweep_outlined),
           ),
       ],
       body: items.isEmpty
           ? const _EmptyCart()
-          : Column(
-              children: [
-                Expanded(
-                  child: ListView.separated(
-                    itemCount: items.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (context, i) {
-                      final it = items[i];
-                      return ListTile(
-                        leading:
-                            (it.thumbnail != null && it.thumbnail!.isNotEmpty)
-                                ? Image.network(
-                                    it.thumbnail!,
-                                    width: 56,
-                                    height: 56,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) =>
-                                        const Icon(Icons.broken_image_outlined),
-                                  )
-                                : const Icon(Icons.image_outlined),
-                        title: Text(
-                          it.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+          : CustomScrollView(
+              slivers: [
+                SliverList.separated(
+                  itemCount: items.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (context, i) {
+                    final it = items[i];
+                    return ListTile(
+                      leading:
+                          (it.thumbnail != null && it.thumbnail!.isNotEmpty)
+                          ? Image.network(
+                              it.thumbnail!,
+                              width: 56,
+                              height: 56,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) =>
+                                  const Icon(Icons.broken_image_outlined),
+                            )
+                          : const Icon(Icons.image_outlined),
+                      title: Text(
+                        it.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        '${it.price.toStringAsFixed(2)} € • x${it.quantity}',
+                      ),
+                      trailing: ConstrainedBox(
+                        constraints: const BoxConstraints.tightFor(
+                          width: 160,
+                          height: 48,
                         ),
-                        subtitle: Text(
-                          '${it.price.toStringAsFixed(2)} € • x${it.quantity}',
-                        ),
-                        trailing: SizedBox(
-                          width: 140,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
                                 tooltip: 'Diminuer',
-                                onPressed: () => cart.decrement(it.productId),
+                                onPressed: () => context
+                                    .read<CartService>()
+                                    .decrement(it.productId),
                                 icon: const Icon(Icons.remove_circle_outline),
                               ),
-                              Text(
-                                '${it.quantity}',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w600),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                child: Text(
+                                  '${it.quantity}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
                               IconButton(
                                 tooltip: 'Augmenter',
-                                onPressed: () => cart.increment(it.productId),
+                                onPressed: () => context
+                                    .read<CartService>()
+                                    .increment(it.productId),
                                 icon: const Icon(Icons.add_circle_outline),
                               ),
                               IconButton(
                                 tooltip: 'Supprimer',
-                                onPressed: () => cart.remove(it.productId),
+                                onPressed: () => context
+                                    .read<CartService>()
+                                    .remove(it.productId),
                                 icon: const Icon(Icons.delete_outline),
                               ),
                             ],
                           ),
                         ),
-                      );
-                    },
+                      ),
+                    );
+                  },
+                ),
+                SliverToBoxAdapter(
+                  child: _CartBottomBar(
+                    total: cart.subtotal,
+                    enabled: !cart.isEmpty,
                   ),
                 ),
-                _CartBottomBar(total: cart.subtotal, enabled: !cart.isEmpty),
               ],
             ),
     );
@@ -133,8 +155,9 @@ class _CartBottomBar extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          border:
-              Border(top: BorderSide(color: Theme.of(context).dividerColor)),
+          border: Border(
+            top: BorderSide(color: Theme.of(context).dividerColor),
+          ),
         ),
         child: Row(
           children: [
@@ -145,6 +168,7 @@ class _CartBottomBar extends StatelessWidget {
               ),
             ),
             FilledButton.icon(
+              key: const Key('checkout_button'),
               onPressed: enabled
                   ? () => Navigator.pushNamed(context, '/checkout')
                   : null,

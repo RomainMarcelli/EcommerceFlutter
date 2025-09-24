@@ -30,9 +30,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Hive (persistance des commandes)
   await Hive.initFlutter();
@@ -67,7 +65,7 @@ class ShopFlutterApp extends StatelessWidget {
           appBarTheme: const AppBarTheme(centerTitle: true),
         ),
 
-        // Auth guard : redirige vers Login si non connecté
+        // Auth guard : met à jour l'URL (/login ou /home) via navigation
         home: StreamBuilder<User?>(
           stream: FirebaseAuth.instance.authStateChanges(),
           builder: (context, snapshot) {
@@ -76,14 +74,14 @@ class ShopFlutterApp extends StatelessWidget {
                 body: Center(child: CircularProgressIndicator()),
               );
             }
-            if (snapshot.data == null) {
-              return const LoginPage();
-            }
-            return const HomePage();
+
+            final bool isLoggedIn = snapshot.data != null;
+
+            // Redirige automatiquement vers login ou home
+            return isLoggedIn ? const HomePage() : const LoginPage();
           },
         ),
 
-        // Routes nommées centralisées
         routes: {
           AppRoutes.login: (_) => const LoginPage(),
           AppRoutes.home: (_) => const HomePage(),
@@ -91,18 +89,55 @@ class ShopFlutterApp extends StatelessWidget {
           AppRoutes.cart: (_) => const CartPage(),
           AppRoutes.orders: (_) => const OrdersPage(),
           AppRoutes.checkout: (_) => const CheckoutPage(),
-          AppRoutes.account: (_) => const AccountPage(),
+          AppRoutes.account: (_) =>
+              AccountPage(auth: FirebaseAuth.instance), // paramètre auth requis
         },
 
-        // Détail produit : reçoit un Product via settings.arguments
         onGenerateRoute: (settings) {
-          if (settings.name == AppRoutes.product) {
+          final name = settings.name ?? '';
+
+          final reg = RegExp('^${AppRoutes.product}/(\\w+)\$');
+          final m = reg.firstMatch(name);
+
+          if (m != null) {
+            final idFromUrl = m.group(1)!;
+
+            final arg = settings.arguments;
+            if (arg is Product) {
+              return MaterialPageRoute(
+                builder: (_) => ProductDetailPage(product: arg),
+                settings: settings,
+              );
+            }
+
+            // fallback si produit non passé en argument
+            return MaterialPageRoute(
+              builder: (_) => Scaffold(
+                appBar: AppBar(title: const Text('Produit')),
+                body: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      'Produit $idFromUrl non chargé.\n'
+                      'Ouvre depuis le catalogue pour passer l’objet Product en arguments, '
+                      'ou implémente un fetch par ID.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
+              settings: settings,
+            );
+          }
+
+          if (name == AppRoutes.product && settings.arguments is Product) {
             final product = settings.arguments as Product;
             return MaterialPageRoute(
               builder: (_) => ProductDetailPage(product: product),
               settings: settings,
             );
           }
+
           return null;
         },
       ),
