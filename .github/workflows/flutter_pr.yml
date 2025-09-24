@@ -40,10 +40,7 @@ jobs:
         run: flutter test --no-pub --coverage
 
       - name: Build Web (release)
-        run: |
-          flutter build web --release \
-            --web-renderer canvaskit \
-            --pwa-strategy offline-first
+        run: flutter build web --release --pwa-strategy offline-first
 
       - name: Upload build & coverage
         uses: actions/upload-artifact@v4
