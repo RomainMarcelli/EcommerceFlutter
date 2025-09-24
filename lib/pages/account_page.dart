@@ -99,8 +99,14 @@ class _AccountPageState extends State<AccountPage> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Valider')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Valider'),
+          ),
         ],
       ),
     );
@@ -108,12 +114,15 @@ class _AccountPageState extends State<AccountPage> {
 
     try {
       // Re-auth pour action sensible
-      final cred = EmailAuthProvider.credential(email: _user.email!, password: pwdCtrl.text);
+      final cred = EmailAuthProvider.credential(
+        email: _user.email!,
+        password: pwdCtrl.text,
+      );
       await _user.reauthenticateWithCredential(cred);
 
       // Mise à jour directe de l'email (AUCUN mail envoyé)
       final newEmail = emailCtrl.text.trim();
-      await _user.updateEmail(newEmail);
+      await _user.verifyBeforeUpdateEmail(newEmail);
 
       _showSnack('Email mis à jour ✅');
 
@@ -165,8 +174,14 @@ class _AccountPageState extends State<AccountPage> {
               ],
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
-              FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Mettre à jour')),
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Annuler'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Mettre à jour'),
+              ),
             ],
           );
         },
@@ -184,7 +199,10 @@ class _AccountPageState extends State<AccountPage> {
     }
 
     try {
-      final cred = EmailAuthProvider.credential(email: _user.email!, password: currentCtrl.text);
+      final cred = EmailAuthProvider.credential(
+        email: _user.email!,
+        password: currentCtrl.text,
+      );
       await _user.reauthenticateWithCredential(cred);
       await _user.updatePassword(newCtrl.text);
       _showSnack('Mot de passe mis à jour ✅');
@@ -202,7 +220,9 @@ class _AccountPageState extends State<AccountPage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("Cette action est irréversible. Entrez votre mot de passe pour confirmer."),
+            const Text(
+              "Cette action est irréversible. Entrez votre mot de passe pour confirmer.",
+            ),
             const SizedBox(height: 12),
             TextField(
               controller: pwdCtrl,
@@ -215,8 +235,14 @@ class _AccountPageState extends State<AccountPage> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Supprimer')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Supprimer'),
+          ),
         ],
       ),
     );
@@ -224,7 +250,10 @@ class _AccountPageState extends State<AccountPage> {
 
     setState(() => _loadingDelete = true);
     try {
-      final cred = EmailAuthProvider.credential(email: _user.email!, password: pwdCtrl.text);
+      final cred = EmailAuthProvider.credential(
+        email: _user.email!,
+        password: pwdCtrl.text,
+      );
       await _user.reauthenticateWithCredential(cred);
       await _user.delete();
       if (!mounted) return;
@@ -255,17 +284,26 @@ class _AccountPageState extends State<AccountPage> {
             children: [
               CircleAvatar(
                 radius: 30,
-                backgroundImage: (photo != null && photo.isNotEmpty) ? NetworkImage(photo) : null,
+                backgroundImage: (photo != null && photo.isNotEmpty)
+                    ? NetworkImage(photo)
+                    : null,
                 child: (photo == null || photo.isEmpty)
                     ? Text(
                         displayName.isNotEmpty
                             ? displayName.characters.first.toUpperCase()
-                            : (email.isNotEmpty ? email.characters.first.toUpperCase() : '?'),
+                            : (email.isNotEmpty
+                                  ? email.characters.first.toUpperCase()
+                                  : '?'),
                       )
                     : null,
               ),
               const SizedBox(width: 16),
-              Expanded(child: Text(email, style: Theme.of(context).textTheme.titleMedium)),
+              Expanded(
+                child: Text(
+                  email,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
             ],
           ),
 
@@ -273,7 +311,10 @@ class _AccountPageState extends State<AccountPage> {
           const Divider(),
 
           // ===== Nom d'affichage =====
-          Text('Nom d’affichage', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'Nom d’affichage',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -291,7 +332,11 @@ class _AccountPageState extends State<AccountPage> {
               FilledButton(
                 onPressed: _loadingName ? null : _updateDisplayName,
                 child: _loadingName
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Text('Enregistrer'),
               ),
             ],
@@ -319,12 +364,19 @@ class _AccountPageState extends State<AccountPage> {
 
           const SizedBox(height: 8),
           ListTile(
-            leading: const Icon(Icons.delete_forever_outlined, color: Colors.red),
+            leading: const Icon(
+              Icons.delete_forever_outlined,
+              color: Colors.red,
+            ),
             title: const Text('Supprimer mon compte'),
             textColor: Colors.red,
             iconColor: Colors.red,
             trailing: _loadingDelete
-                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : const Icon(Icons.chevron_right),
             onTap: _loadingDelete ? null : _deleteAccount,
           ),

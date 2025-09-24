@@ -52,8 +52,7 @@ class CheckoutPage extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.surface,
                       border: Border(
-                        top: BorderSide(
-                            color: Theme.of(context).dividerColor),
+                        top: BorderSide(color: Theme.of(context).dividerColor),
                       ),
                     ),
                     child: Row(
@@ -71,8 +70,7 @@ class CheckoutPage extends StatelessWidget {
                               ? null
                               : () async {
                                   final cart = context.read<CartService>();
-                                  final repo =
-                                      context.read<OrdersRepository>();
+                                  final repo = context.read<OrdersRepository>();
 
                                   final order = Order(
                                     id: DateTime.now()
@@ -87,11 +85,9 @@ class CheckoutPage extends StatelessWidget {
                                   cart.clear();
 
                                   if (context.mounted) {
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(
+                                    ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                          content:
-                                              Text('Commande créée ✅')),
+                                          content: Text('Commande créée ✅')),
                                     );
                                     Navigator.pushNamedAndRemoveUntil(
                                       context,
