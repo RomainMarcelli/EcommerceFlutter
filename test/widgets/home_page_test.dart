@@ -9,8 +9,9 @@ import 'package:tp_ecommerce/routes.dart';
 
 void main() {
   group('HomePage', () {
-    testWidgets('affiche le titre et pas de badge quand le panier est vide',
-        (WidgetTester tester) async {
+    testWidgets('affiche le titre et pas de badge quand le panier est vide', (
+      WidgetTester tester,
+    ) async {
       final cart = CartService();
 
       await tester.pumpWidget(
@@ -31,8 +32,9 @@ void main() {
       expect(find.text('0'), findsNothing);
     });
 
-    testWidgets('affiche le badge avec le nombre d’articles quand non vide',
-        (WidgetTester tester) async {
+    testWidgets('affiche le badge avec le nombre d’articles quand non vide', (
+      WidgetTester tester,
+    ) async {
       final cart = CartService();
 
       await tester.pumpWidget(
@@ -58,8 +60,9 @@ void main() {
       expect(find.text('3'), findsOneWidget);
     });
 
-    testWidgets('tap sur l’icône panier navigue vers /cart',
-        (WidgetTester tester) async {
+    testWidgets('tap sur l’icône panier navigue vers /cart', (
+      WidgetTester tester,
+    ) async {
       final cart = CartService();
 
       await tester.pumpWidget(

@@ -48,7 +48,9 @@ class ProductDetailPage extends StatelessWidget {
                       color: Theme.of(context).colorScheme.outline,
                       width: 2,
                     ),
-                    color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.15),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceVariant.withOpacity(0.15),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(6),
@@ -88,14 +90,17 @@ class ProductDetailPage extends StatelessWidget {
                   const SizedBox(width: 12),
                   Text(
                     '${price.toStringAsFixed(2)} €',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
             ),
 
             const SizedBox(height: 8),
-            if (product.category != null && product.category!.toString().isNotEmpty)
+            if (product.category != null &&
+                product.category!.toString().isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Chip(label: Text(product.category.toString())),
@@ -138,15 +143,22 @@ class ProductDetailPage extends StatelessWidget {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 12,
+                      ),
                       minimumSize: const Size(0, 44),
                     ),
                   ),
                   OutlinedButton(
                     key: const Key('seeCartButton'), // optionnel
-                    onPressed: () => Navigator.pushNamed(context, AppRoutes.cart),
+                    onPressed: () =>
+                        Navigator.pushNamed(context, AppRoutes.cart),
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 12,
+                      ),
                       minimumSize: const Size(0, 44),
                     ),
                     child: const Text('Voir le panier'),
@@ -184,7 +196,11 @@ class ProductDetailPage extends StatelessWidget {
 
   void _shareProduct(Product p, double price) {
     final url = _extractThumbnail(p);
-    final text = [p.title, '${price.toStringAsFixed(2)} €', if (url != null) url].join(' · ');
+    final text = [
+      p.title,
+      '${price.toStringAsFixed(2)} €',
+      if (url != null) url,
+    ].join(' · ');
     Share.share(text);
-    }
+  }
 }

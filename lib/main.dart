@@ -30,9 +30,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Hive (persistance des commandes)
   await Hive.initFlutter();
@@ -80,9 +78,7 @@ class ShopFlutterApp extends StatelessWidget {
             final bool isLoggedIn = snapshot.data != null;
 
             // Redirige automatiquement vers login ou home
-            return isLoggedIn
-                ? const HomePage()
-                : const LoginPage();
+            return isLoggedIn ? const HomePage() : const LoginPage();
           },
         ),
 

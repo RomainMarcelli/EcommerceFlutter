@@ -140,13 +140,16 @@ class _CatalogPageState extends State<CatalogPage> {
                                 ),
                                 value: _selectedCategory,
                                 items: _categories
-                                    .map((c) => DropdownMenuItem(
-                                          value: c,
-                                          child: Text(c),
-                                        ))
+                                    .map(
+                                      (c) => DropdownMenuItem(
+                                        value: c,
+                                        child: Text(c),
+                                      ),
+                                    )
                                     .toList(),
                                 onChanged: (v) => setState(
-                                    () => _selectedCategory = v ?? 'Toutes'),
+                                  () => _selectedCategory = v ?? 'Toutes',
+                                ),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -172,11 +175,11 @@ class _CatalogPageState extends State<CatalogPage> {
                       ),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 0.65,
-                      ),
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 0.65,
+                          ),
                     ),
                   ),
               ],
@@ -196,7 +199,8 @@ class _ProductCardGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final price = (product.price as num).toDouble();
-    final thumb = (product.thumbnail is String &&
+    final thumb =
+        (product.thumbnail is String &&
             (product.thumbnail as String).isNotEmpty)
         ? product.thumbnail as String
         : null;
@@ -278,7 +282,9 @@ class _ProductCardGrid extends StatelessWidget {
                     label: const Text('Ajouter'),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 8),
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

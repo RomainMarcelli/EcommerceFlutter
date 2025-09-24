@@ -249,8 +249,9 @@ class _CartSummary extends StatelessWidget {
               ? 'Vous avez $itemsCount article(s) dans le panier'
               : 'Votre panier est vide',
         ),
-        subtitle:
-            hasItems ? Text('Total : ${total.toStringAsFixed(2)} €') : null,
+        subtitle: hasItems
+            ? Text('Total : ${total.toStringAsFixed(2)} €')
+            : null,
         trailing: FilledButton(
           onPressed: onGoToCart,
           child: Text(hasItems ? 'Voir le panier' : 'Voir le catalogue'),

@@ -20,9 +20,9 @@ class CartPage extends StatelessWidget {
             tooltip: 'Vider le panier',
             onPressed: () {
               cart.clear();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Panier vidé')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Panier vidé')));
             },
             icon: const Icon(Icons.delete_sweep_outlined),
           ),
@@ -39,15 +39,15 @@ class CartPage extends StatelessWidget {
                     return ListTile(
                       leading:
                           (it.thumbnail != null && it.thumbnail!.isNotEmpty)
-                              ? Image.network(
-                                  it.thumbnail!,
-                                  width: 56,
-                                  height: 56,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                      const Icon(Icons.broken_image_outlined),
-                                )
-                              : const Icon(Icons.image_outlined),
+                          ? Image.network(
+                              it.thumbnail!,
+                              width: 56,
+                              height: 56,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) =>
+                                  const Icon(Icons.broken_image_outlined),
+                            )
+                          : const Icon(Icons.image_outlined),
                       title: Text(
                         it.title,
                         maxLines: 2,
@@ -58,7 +58,9 @@ class CartPage extends StatelessWidget {
                       ),
                       trailing: ConstrainedBox(
                         constraints: const BoxConstraints.tightFor(
-                            width: 160, height: 48),
+                          width: 160,
+                          height: 48,
+                        ),
                         child: FittedBox(
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerRight,
@@ -73,12 +75,14 @@ class CartPage extends StatelessWidget {
                                 icon: const Icon(Icons.remove_circle_outline),
                               ),
                               Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
                                 child: Text(
                                   '${it.quantity}',
                                   style: const TextStyle(
-                                      fontWeight: FontWeight.w600),
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                               IconButton(
@@ -151,8 +155,9 @@ class _CartBottomBar extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          border:
-              Border(top: BorderSide(color: Theme.of(context).dividerColor)),
+          border: Border(
+            top: BorderSide(color: Theme.of(context).dividerColor),
+          ),
         ),
         child: Row(
           children: [

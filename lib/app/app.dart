@@ -10,10 +10,7 @@ class ShopApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'ShopFlutter',
       routerConfig: router,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: Colors.indigo,
-      ),
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo),
     );
   }
 }

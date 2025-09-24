@@ -12,13 +12,9 @@ void main() {
 
     Widget buildApp(Widget child) {
       return MultiProvider(
-        providers: [
-          ChangeNotifierProvider<CartService>.value(value: cart),
-        ],
+        providers: [ChangeNotifierProvider<CartService>.value(value: cart)],
         child: MaterialApp(
-          routes: {
-            AppRoutes.checkout: (_) => const _DummyCheckout(),
-          },
+          routes: {AppRoutes.checkout: (_) => const _DummyCheckout()},
           home: child,
         ),
       );
@@ -27,7 +23,11 @@ void main() {
     setUp(() {
       cart = CartService();
       cart.addItem(
-          productId: 1, title: 'Produit A', price: 10.0, thumbnail: '');
+        productId: 1,
+        title: 'Produit A',
+        price: 10.0,
+        thumbnail: '',
+      );
       cart.addItem(productId: 2, title: 'Produit B', price: 5.0, thumbnail: '');
       // Total attendu: 15.00 €
     });
@@ -41,8 +41,9 @@ void main() {
       expect(find.textContaining('Total : 15.00 €'), findsOneWidget);
     });
 
-    testWidgets('bouton + et - mettent à jour la quantité et le total',
-        (tester) async {
+    testWidgets('bouton + et - mettent à jour la quantité et le total', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildApp(const CartPage()));
       await tester.pumpAndSettle();
 
@@ -50,28 +51,35 @@ void main() {
       expect(produitATile, findsOneWidget);
 
       final plus = find.descendant(
-          of: produitATile, matching: find.byIcon(Icons.add_circle_outline));
+        of: produitATile,
+        matching: find.byIcon(Icons.add_circle_outline),
+      );
       await tester.tap(plus);
       await tester.pump();
 
       expect(find.textContaining('Total : 25.00 €'), findsOneWidget);
 
       final moins = find.descendant(
-          of: produitATile, matching: find.byIcon(Icons.remove_circle_outline));
+        of: produitATile,
+        matching: find.byIcon(Icons.remove_circle_outline),
+      );
       await tester.tap(moins);
       await tester.pump();
 
       expect(find.textContaining('Total : 15.00 €'), findsOneWidget);
     });
 
-    testWidgets('supprimer un item met à jour la liste et le total',
-        (tester) async {
+    testWidgets('supprimer un item met à jour la liste et le total', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildApp(const CartPage()));
       await tester.pumpAndSettle();
 
       final produitBTile = find.widgetWithText(ListTile, 'Produit B');
       final deleteBtn = find.descendant(
-          of: produitBTile, matching: find.byIcon(Icons.delete_outline));
+        of: produitBTile,
+        matching: find.byIcon(Icons.delete_outline),
+      );
       await tester.tap(deleteBtn);
       await tester.pump();
 
@@ -79,8 +87,9 @@ void main() {
       expect(find.textContaining('Total : 10.00 €'), findsOneWidget);
     });
 
-    testWidgets('Commander navigue vers /checkout quand panier non vide',
-        (tester) async {
+    testWidgets('Commander navigue vers /checkout quand panier non vide', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildApp(const CartPage()));
       await tester.pumpAndSettle();
 

@@ -19,7 +19,9 @@ void main() {
         of: find.byType(TextField),
         matching: find.text('Votre email'),
       );
-      return byHint.evaluate().isNotEmpty ? byHint : find.byType(TextField).first;
+      return byHint.evaluate().isNotEmpty
+          ? byHint
+          : find.byType(TextField).first;
     }
 
     Finder _findPasswordField() {
@@ -29,7 +31,9 @@ void main() {
       if (byLabel.evaluate().isNotEmpty) return byLabel;
       final allTextFields = find.byType(TextField);
       // si le premier était l’email, on prend le 2e
-      return allTextFields.evaluate().length >= 2 ? allTextFields.at(1) : allTextFields.first;
+      return allTextFields.evaluate().length >= 2
+          ? allTextFields.at(1)
+          : allTextFields.first;
     }
 
     Finder _findLoginButton() {
@@ -45,18 +49,29 @@ void main() {
       final genericText = find.text('Se connecter');
       if (genericText.evaluate().isNotEmpty) {
         // retourne le premier bouton ancêtre de ce texte
-        final candidates = find.ancestor(of: genericText, matching: find.byType(ElevatedButton));
+        final candidates = find.ancestor(
+          of: genericText,
+          matching: find.byType(ElevatedButton),
+        );
         if (candidates.evaluate().isNotEmpty) return candidates.first;
-        final candidates2 = find.ancestor(of: genericText, matching: find.byType(FilledButton));
+        final candidates2 = find.ancestor(
+          of: genericText,
+          matching: find.byType(FilledButton),
+        );
         if (candidates2.evaluate().isNotEmpty) return candidates2.first;
-        final candidates3 = find.ancestor(of: genericText, matching: find.byType(TextButton));
+        final candidates3 = find.ancestor(
+          of: genericText,
+          matching: find.byType(TextButton),
+        );
         if (candidates3.evaluate().isNotEmpty) return candidates3.first;
       }
       // Dernier recours : premier FilledButton/ElevatedButton trouvé
       final anyFilled = find.byType(FilledButton);
       if (anyFilled.evaluate().isNotEmpty) return anyFilled.first;
       final anyElev = find.byType(ElevatedButton);
-      return anyElev.evaluate().isNotEmpty ? anyElev.first : find.byType(OutlinedButton).first;
+      return anyElev.evaluate().isNotEmpty
+          ? anyElev.first
+          : find.byType(OutlinedButton).first;
     }
 
     Widget _buildApp(Widget child) {
@@ -69,7 +84,9 @@ void main() {
       );
     }
 
-    testWidgets('affiche les champs email/mot de passe et le bouton', (tester) async {
+    testWidgets('affiche les champs email/mot de passe et le bouton', (
+      tester,
+    ) async {
       await tester.pumpWidget(_buildApp(const LoginPage()));
       await tester.pumpAndSettle();
 
@@ -78,7 +95,9 @@ void main() {
       expect(_findLoginButton(), findsOneWidget);
     });
 
-    testWidgets('saisie email + mot de passe remplit les champs', (tester) async {
+    testWidgets('saisie email + mot de passe remplit les champs', (
+      tester,
+    ) async {
       await tester.pumpWidget(_buildApp(const LoginPage()));
       await tester.pumpAndSettle();
 
@@ -93,31 +112,33 @@ void main() {
       expect(find.text('secret123'), findsOneWidget);
     });
 
-    testWidgets('tap sur Se connecter ne crash pas et peut naviguer si LoginPage route vers /home',
-        (tester) async {
-      await tester.pumpWidget(_buildApp(const LoginPage()));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'tap sur Se connecter ne crash pas et peut naviguer si LoginPage route vers /home',
+      (tester) async {
+        await tester.pumpWidget(_buildApp(const LoginPage()));
+        await tester.pumpAndSettle();
 
-      // On remplit des valeurs plausibles
-      await tester.enterText(_findEmailField(), 'john@doe.com');
-      await tester.enterText(_findPasswordField(), 'secret123');
-      await tester.pump();
+        // On remplit des valeurs plausibles
+        await tester.enterText(_findEmailField(), 'john@doe.com');
+        await tester.enterText(_findPasswordField(), 'secret123');
+        await tester.pump();
 
-      // Tap sur le bouton
-      await tester.tap(_findLoginButton());
-      await tester.pumpAndSettle();
+        // Tap sur le bouton
+        await tester.tap(_findLoginButton());
+        await tester.pumpAndSettle();
 
-      // Deux cas :
-      // - Si ta LoginPage navigue bien vers /home en cas de succès -> on voit la FAKE HOME.
-      // - Sinon, ce test ne casse pas : on check simplement que l’écran reste stable.
-      final isHome = find.text('FAKE HOME');
-      if (isHome.evaluate().isNotEmpty) {
-        expect(isHome, findsOneWidget);
-      } else {
-        // Pas de navigation ? On reste sur la page sans exceptions.
-        expect(find.byType(LoginPage), findsOneWidget);
-      }
-    });
+        // Deux cas :
+        // - Si ta LoginPage navigue bien vers /home en cas de succès -> on voit la FAKE HOME.
+        // - Sinon, ce test ne casse pas : on check simplement que l’écran reste stable.
+        final isHome = find.text('FAKE HOME');
+        if (isHome.evaluate().isNotEmpty) {
+          expect(isHome, findsOneWidget);
+        } else {
+          // Pas de navigation ? On reste sur la page sans exceptions.
+          expect(find.byType(LoginPage), findsOneWidget);
+        }
+      },
+    );
   });
 }
 
@@ -126,8 +147,6 @@ class _DummyHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text('FAKE HOME')),
-    );
+    return const Scaffold(body: Center(child: Text('FAKE HOME')));
   }
 }

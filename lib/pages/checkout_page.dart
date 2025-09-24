@@ -32,15 +32,24 @@ class CheckoutPage extends StatelessWidget {
                       return ListTile(
                         leading:
                             (it.thumbnail != null && it.thumbnail!.isNotEmpty)
-                                ? Image.network(it.thumbnail!,
-                                    width: 56, height: 56, fit: BoxFit.cover)
-                                : const Icon(Icons.image_outlined),
-                        title: Text(it.title,
-                            maxLines: 2, overflow: TextOverflow.ellipsis),
+                            ? Image.network(
+                                it.thumbnail!,
+                                width: 56,
+                                height: 56,
+                                fit: BoxFit.cover,
+                              )
+                            : const Icon(Icons.image_outlined),
+                        title: Text(
+                          it.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                         subtitle: Text(
-                            '${it.price.toStringAsFixed(2)} € • x${it.quantity}'),
-                        trailing:
-                            Text('${(it.lineTotal).toStringAsFixed(2)} €'),
+                          '${it.price.toStringAsFixed(2)} € • x${it.quantity}',
+                        ),
+                        trailing: Text(
+                          '${(it.lineTotal).toStringAsFixed(2)} €',
+                        ),
                       );
                     },
                   ),
@@ -73,8 +82,7 @@ class CheckoutPage extends StatelessWidget {
                                   final repo = context.read<OrdersRepository>();
 
                                   final order = Order(
-                                    id: DateTime.now()
-                                        .millisecondsSinceEpoch
+                                    id: DateTime.now().millisecondsSinceEpoch
                                         .toString(),
                                     createdAt: DateTime.now(),
                                     lines: List<CartItem>.from(cart.items),
@@ -87,7 +95,8 @@ class CheckoutPage extends StatelessWidget {
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                          content: Text('Commande créée ✅')),
+                                        content: Text('Commande créée ✅'),
+                                      ),
                                     );
                                     Navigator.pushNamedAndRemoveUntil(
                                       context,

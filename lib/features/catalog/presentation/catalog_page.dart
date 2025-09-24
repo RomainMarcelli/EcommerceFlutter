@@ -17,12 +17,10 @@ class CatalogPage extends StatelessWidget {
               context.go('/login');
             },
             icon: const Icon(Icons.logout),
-          )
+          ),
         ],
       ),
-      body: const Center(
-        child: Text('Catalogue produits (à implémenter)'),
-      ),
+      body: const Center(child: Text('Catalogue produits (à implémenter)')),
     );
   }
 }

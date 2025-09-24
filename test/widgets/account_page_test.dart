@@ -7,9 +7,7 @@ import 'package:network_image_mock/network_image_mock.dart';
 import 'package:tp_ecommerce/pages/account_page.dart';
 
 Widget createWidgetUnderTest(FirebaseAuth auth) {
-  return MaterialApp(
-    home: AccountPage(auth: auth),
-  );
+  return MaterialApp(home: AccountPage(auth: auth));
 }
 
 void main() {
@@ -29,8 +27,9 @@ void main() {
     mockAuth = MockFirebaseAuth(mockUser: mockUser, signedIn: true);
   });
 
-  testWidgets('Affiche l’email et le displayName dans AccountPage',
-      (tester) async {
+  testWidgets('Affiche l’email et le displayName dans AccountPage', (
+    tester,
+  ) async {
     await mockNetworkImagesFor(() async {
       await tester.pumpWidget(createWidgetUnderTest(mockAuth));
       await tester.pumpAndSettle();
