@@ -212,7 +212,7 @@ class _ProductCardGrid extends StatelessWidget {
       child: InkWell(
         onTap: () => Navigator.pushNamed(
           context,
-          AppRoutes.product,
+          '${AppRoutes.product}/${product.id}',
           arguments: product,
         ),
         child: Padding(

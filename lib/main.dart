@@ -67,23 +67,38 @@ class ShopFlutterApp extends StatelessWidget {
           appBarTheme: const AppBarTheme(centerTitle: true),
         ),
 
-        // Auth guard : redirige vers Login si non connecté
+        // Auth guard : met à jour l'URL (/login ou /home) via navigation
         home: StreamBuilder<User?>(
           stream: FirebaseAuth.instance.authStateChanges(),
           builder: (context, snapshot) {
+            // Écran d'attente
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Scaffold(
                 body: Center(child: CircularProgressIndicator()),
               );
             }
-            if (snapshot.data == null) {
-              return const LoginPage();
-            }
-            return const HomePage();
+
+            // Détermine la cible selon l'auth
+            final bool isLoggedIn = snapshot.data != null;
+            final String target = isLoggedIn ? AppRoutes.home : AppRoutes.login;
+
+            // Important : déclencher la navigation APRÈS le build
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              final current = ModalRoute.of(context)?.settings.name;
+              if (current != target) {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  target,
+                  (route) => false,
+                );
+              }
+            });
+
+            // Page tampon minimale pendant la redirection
+            return const Scaffold(body: SizedBox.shrink());
           },
         ),
 
-        // Routes nommées centralisées
+        // Routes nommées "statiques"
         routes: {
           AppRoutes.login: (_) => const LoginPage(),
           AppRoutes.home: (_) => const HomePage(),
@@ -92,17 +107,62 @@ class ShopFlutterApp extends StatelessWidget {
           AppRoutes.orders: (_) => const OrdersPage(),
           AppRoutes.checkout: (_) => const CheckoutPage(),
           AppRoutes.account: (_) => const AccountPage(),
+          // NE METS PAS AppRoutes.product ici, on le gère en dynamique ci-dessous
         },
 
-        // Détail produit : reçoit un Product via settings.arguments
+        // Routes "dynamiques" : /product/<id>
         onGenerateRoute: (settings) {
-          if (settings.name == AppRoutes.product) {
+          final name = settings.name ?? '';
+
+          // ex: AppRoutes.product == '/product'  -> on accepte /product/123
+          final reg = RegExp('^${AppRoutes.product}/(\\w+)\$');
+          final m = reg.firstMatch(name);
+
+          if (m != null) {
+            final idFromUrl = m.group(1)!;
+
+            // Si un Product est passé en argument (navigation interne), on l'utilise
+            final arg = settings.arguments;
+            if (arg is Product) {
+              return MaterialPageRoute(
+                builder: (_) => ProductDetailPage(product: arg),
+                settings: settings,
+              );
+            }
+
+            // Deep link ou refresh direct : ici, tu peux récupérer le produit via un repo.
+            // Exemple si tu exposes un CatalogRepository au niveau supérieur :
+            // final repo = _.read<CatalogRepository>();
+            // final product = await repo.fetchById(idFromUrl);
+            // return MaterialPageRoute(builder: (_) => ProductDetailPage(product: product));
+
+            // Fallback temporaire si non implémenté
+            return MaterialPageRoute(
+              builder: (_) => Scaffold(
+                appBar: AppBar(title: const Text('Produit')),
+                body: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      'Produit $idFromUrl non chargé.\nOuvre depuis le catalogue pour passer l’objet Product en arguments, ou implémente un fetch par ID.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
+              settings: settings,
+            );
+          }
+
+          // Compat : ancienne route /product sans id
+          if (name == AppRoutes.product && settings.arguments is Product) {
             final product = settings.arguments as Product;
             return MaterialPageRoute(
               builder: (_) => ProductDetailPage(product: product),
               settings: settings,
             );
           }
+
           return null;
         },
       ),
