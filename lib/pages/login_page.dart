@@ -121,14 +121,10 @@ class _LoginPageState extends State<LoginPage> {
               padding: const EdgeInsets.all(24),
               child: Card(
                 elevation: 0,
-<<<<<<<<< Temporary merge branch 1
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 child: Padding(
-=========
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: SingleChildScrollView(
->>>>>>>>> Temporary merge branch 2
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -173,9 +169,11 @@ class _LoginPageState extends State<LoginPage> {
                                 suffixIcon: IconButton(
                                   onPressed: () =>
                                       setState(() => _obscure = !_obscure),
-                                  icon: Icon(_obscure
-                                      ? Icons.visibility
-                                      : Icons.visibility_off),
+                                  icon: Icon(
+                                    _obscure
+                                        ? Icons.visibility
+                                        : Icons.visibility_off,
+                                  ),
                                   tooltip: _obscure ? 'Afficher' : 'Masquer',
                                 ),
                               ),
@@ -207,11 +205,14 @@ class _LoginPageState extends State<LoginPage> {
                                         height: 20,
                                         width: 20,
                                         child: CircularProgressIndicator(
-                                            strokeWidth: 2),
+                                          strokeWidth: 2,
+                                        ),
                                       )
-                                    : Text(_isLogin
-                                        ? 'Se connecter'
-                                        : 'Créer le compte'),
+                                    : Text(
+                                        _isLogin
+                                            ? 'Se connecter'
+                                            : 'Créer le compte',
+                                      ),
                               ),
                             ),
                           ],
@@ -231,7 +232,8 @@ class _LoginPageState extends State<LoginPage> {
                                 ? null
                                 : () => setState(() => _isLogin = !_isLogin),
                             child: Text(
-                                _isLogin ? 'Créer un compte' : 'Se connecter'),
+                              _isLogin ? 'Créer un compte' : 'Se connecter',
+                            ),
                           ),
                         ],
                       ),
